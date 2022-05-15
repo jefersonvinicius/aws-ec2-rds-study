@@ -81,9 +81,27 @@ app.get('/users', async (request, response) => {
 });
 
 app.get('/status', async (request, response) => {
-  const hostname = os.hostname();
+  const memGB = os.totalmem() * (9.31 * Math.pow(10, -10));
+  const machine = {
+    platform: os.platform(),
+    hostname: os.hostname(),
+    ip: request.ip,
+    numberOfCpus: os.cpus().length,
+    cpuModel: os.cpus()[0].model,
+    arch: os.arch(),
+    type: os.type(),
+    memory: `${memGB.toFixed(2)}GB'`,
+  };
 
-  return response.json({ hostname });
+  const { rows } = await client.query(`
+    select * from 
+      (select setting::int "maxConnections" from pg_settings where name=$$max_connections$$) q1,
+      (select count(*)::int "connections" from pg_stat_activity) q2,
+      (select count(*)::int "tables" from information_schema.tables where table_schema = 'public') q3
+  `);
+  const database = { ...rows[0] };
+
+  return response.json({ machine, database });
 });
 
 async function bootstrap() {

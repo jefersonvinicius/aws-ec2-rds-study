@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "predev": "docker-compose -f docker-compose.dev.yml up -d",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
